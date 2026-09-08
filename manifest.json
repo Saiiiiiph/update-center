@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.saiiiiiph.update-center",
+  "name": "Update Center",
+  "version": "0.1.0",
+  "author": "Saiiiiiph",
+  "license": "MIT",
+  "description": "One quiet indicator for pending system, AUR, Flatpak, and Omarchy plugin updates.",
+  "kinds": ["bar-widget"],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Update Center",
+    "description": "Checks system, AUR, Flatpak, and Git-managed Omarchy plugin updates. It never installs automatically.",
+    "category": "System",
+    "defaultSection": "right",
+    "allowMultiple": false
+  }
+}
