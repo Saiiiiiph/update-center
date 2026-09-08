@@ -80,6 +80,23 @@ Panel {
     bar.run("notify-send " + shellQuote("Update Center") + " " + shellQuote(message))
   }
 
+  function persistSettings(values) {
+    var entry = { id: root.moduleName }
+    for (var existing in root.settings) if (existing !== "id") entry[existing] = root.settings[existing]
+    for (var key in values) entry[key] = values[key]
+
+    root.settings = entry
+    if (hostWidget && "settings" in hostWidget) hostWidget.settings = entry
+    if (bar && bar.shell && typeof bar.shell.updateEntryInline === "function")
+      bar.shell.updateEntryInline(root.moduleName, entry)
+  }
+
+  function setCheckSchedule(schedule) {
+    if (schedule === checkSchedule) return
+    persistSettings({ checkSchedule: schedule })
+    refresh()
+  }
+
   function count(source) {
     var total = 0
     for (var i = 0; i < updates.length; i++) if (updates[i].source === source) total++
@@ -324,6 +341,43 @@ Panel {
           foreground: root.barForeground
           bordered: true
           onClicked: root.launch("all")
+        }
+
+        Column {
+          width: parent.width
+          spacing: Style.space(6)
+
+          PanelSeparator { foreground: root.barForeground }
+
+          Text {
+            text: "Check for updates"
+            color: root.barForeground
+            font.family: root.bar ? root.bar.fontFamily : Style.font.family
+            font.pixelSize: Style.font.body
+            font.bold: true
+          }
+
+          Flow {
+            width: parent.width
+            spacing: Style.space(6)
+
+            Repeater {
+              model: [
+                { value: "At startup only", label: "Startup" },
+                { value: "Every 30 minutes", label: "30 min" },
+                { value: "Every 2 hours", label: "2 hours" },
+                { value: "Every 6 hours", label: "6 hours" },
+                { value: "Every 12 hours", label: "12 hours" }
+              ]
+              delegate: Button {
+                required property var modelData
+                text: root.checkSchedule === modelData.value ? "✓ " + modelData.label : modelData.label
+                foreground: root.barForeground
+                bordered: true
+                onClicked: root.setCheckSchedule(modelData.value)
+              }
+            }
+          }
         }
 
         Column {
