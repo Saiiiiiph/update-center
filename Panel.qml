@@ -59,6 +59,11 @@ Panel {
     return updates.filter(function(item) { return item.source === source })
   }
 
+  function visibleSectionRows(source) {
+    var rows = sectionRows(source)
+    return sectionExpanded(source) ? rows : rows.slice(0, compactRowLimit)
+  }
+
   function sectionExpanded(source) {
     return expandedSections[source] === true
   }
@@ -229,11 +234,10 @@ Panel {
               }
             }
             Repeater {
-              model: root.sectionRows(modelData.id)
+              model: root.visibleSectionRows(modelData.id)
               delegate: Row {
                 required property var modelData
                 width: parent.width
-                visible: root.sectionExpanded(modelData.source) || index < root.compactRowLimit
                 spacing: Style.space(10)
                 Text {
                   width: parent.width * 0.54
