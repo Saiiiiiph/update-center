@@ -117,6 +117,10 @@ Panel {
     // System update lists are often long. Keep that section to its heading
     // until the user explicitly asks for the package names.
     if (source === "system" && !sectionExpanded(source)) return []
+    // Flatpak and plugin updates stay compact as soon as there is more than
+    // one row, while a single update remains immediately visible.
+    if ((source === "flatpak" || source === "plugin")
+        && rows.length > 1 && !sectionExpanded(source)) return []
     return sectionExpanded(source) ? rows : rows.slice(0, compactRowLimit)
   }
 
@@ -353,7 +357,9 @@ Panel {
                 id: detailsButton
                 visible: modelData.id === "system"
                   ? root.count(modelData.id) > 0
-                  : root.count(modelData.id) > root.compactRowLimit
+                  : ((modelData.id === "flatpak" || modelData.id === "plugin")
+                     ? root.count(modelData.id) > 1
+                     : root.count(modelData.id) > root.compactRowLimit)
                 text: root.sectionExpanded(modelData.id)
                   ? "Less"
                   : "Show all (" + root.count(modelData.id) + ")"
