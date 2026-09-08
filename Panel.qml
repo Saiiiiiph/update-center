@@ -103,6 +103,11 @@ Panel {
     return total
   }
 
+  function displayName(item) {
+    if (item.source === "plugin" && item.name === root.moduleName) return "Update Center"
+    return item.name
+  }
+
   function sectionRows(source) {
     return updates.filter(function(item) { return item.source === source })
   }
@@ -264,6 +269,41 @@ Panel {
           font.pixelSize: Style.font.bodySmall
         }
 
+        Column {
+          visible: root.updates.length > 0 && root.offerShutdownAction
+          width: parent.width
+          spacing: Style.space(8)
+
+          PanelSeparator { foreground: root.barForeground }
+
+          Text {
+            width: parent.width
+            text: "Updates are waiting"
+            color: root.barForeground
+            font.family: root.bar ? root.bar.fontFamily : Style.font.family
+            font.pixelSize: Style.font.body
+            font.bold: true
+          }
+
+          Row {
+            spacing: Style.space(8)
+
+            Button {
+              text: "Update & shut down"
+              foreground: root.barForeground
+              bordered: true
+              onClicked: root.updateThenShutdown()
+            }
+
+            Button {
+              text: "Shut down anyway"
+              foreground: root.barForeground
+              bordered: true
+              onClicked: root.shutdownAnyway()
+            }
+          }
+        }
+
         Repeater {
           model: [
             { id: "system", title: "System", action: "Update system" },
@@ -314,7 +354,7 @@ Panel {
                 spacing: Style.space(10)
                 Text {
                   width: parent.width * 0.54
-                  text: modelData.name
+                  text: root.displayName(modelData)
                   elide: Text.ElideRight
                   color: root.barForeground
                   font.family: root.bar ? root.bar.fontFamily : Style.font.family
@@ -380,49 +420,6 @@ Panel {
           }
         }
 
-        Column {
-          visible: root.updates.length > 0 && root.offerShutdownAction
-          width: parent.width
-          spacing: Style.space(8)
-
-          PanelSeparator { foreground: root.barForeground }
-
-          Text {
-            width: parent.width
-            text: "Updates are waiting"
-            color: root.barForeground
-            font.family: root.bar ? root.bar.fontFamily : Style.font.family
-            font.pixelSize: Style.font.body
-            font.bold: true
-          }
-
-          Text {
-            width: parent.width
-            text: "Install them now, then turn off your computer."
-            wrapMode: Text.WordWrap
-            color: Qt.darker(root.barForeground, 1.35)
-            font.family: root.bar ? root.bar.fontFamily : Style.font.family
-            font.pixelSize: Style.font.bodySmall
-          }
-
-          Row {
-            spacing: Style.space(8)
-
-            Button {
-              text: "Update & shut down"
-              foreground: root.barForeground
-              bordered: true
-              onClicked: root.updateThenShutdown()
-            }
-
-            Button {
-              text: "Shut down anyway"
-              foreground: root.barForeground
-              bordered: true
-              onClicked: root.shutdownAnyway()
-            }
-          }
-        }
       }
     }
   }
