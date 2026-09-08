@@ -69,10 +69,6 @@ Panel {
     return "'" + String(value).replace(/'/g, "'\\''") + "'"
   }
 
-  function pluginUpdateCommand() {
-    return Qt.resolvedUrl("run-plugin-update.sh").toString().replace("file://", "")
-  }
-
   function runInTerminal(command) {
     // Kept behind && so a failed or cancelled update never masquerades as a
     // success at the bottom of the terminal. The marker is watched below, so
@@ -101,15 +97,8 @@ Panel {
     if (!bar) return
     if (kind === "system") runInTerminal("omarchy update")
     else if (kind === "flatpak") runInTerminal("flatpak update")
-    else if (kind === "plugin") {
-      var pluginCommand = pluginUpdateCommand()
-      if (pluginCommand) bar.run("omarchy-launch-floating-terminal-with-presentation bash " + pluginCommand)
-    } else {
-      var allCommand = "omarchy update && flatpak update"
-      var pluginUpdates = pluginUpdateCommand()
-      if (pluginUpdates) allCommand += " && " + pluginUpdates
-      runInTerminal(allCommand)
-    }
+    else if (kind === "plugin") runInTerminal("omarchy plugin update")
+    else runInTerminal("omarchy update && flatpak update && omarchy plugin update")
   }
 
   Process {
