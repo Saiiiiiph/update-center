@@ -20,6 +20,8 @@ Panel {
   property string completionMarker: ""
   readonly property var barIdentity: hostWidget || root
   readonly property string checkSchedule: String(setting("checkSchedule", "Every 6 hours"))
+  readonly property var offerShutdownActionValue: setting("offerShutdownAction", true)
+  readonly property bool offerShutdownAction: offerShutdownActionValue === true || String(offerShutdownActionValue) === "true"
   readonly property int checkIntervalMs: {
     if (checkSchedule === "Every 30 minutes") return 30 * 60 * 1000
     if (checkSchedule === "Every 2 hours") return 2 * 60 * 60 * 1000
@@ -129,6 +131,17 @@ Panel {
     else if (kind === "flatpak") runInTerminal("flatpak update")
     else if (kind === "plugin") runInTerminal("omarchy plugin update")
     else runInTerminal("omarchy update && flatpak update && omarchy plugin update")
+  }
+
+  function updateThenShutdown() {
+    if (!bar) return
+    var command = "omarchy update && flatpak update && omarchy plugin update && omarchy system shutdown"
+    bar.run("omarchy-launch-floating-terminal-with-presentation bash -lc " + shellQuote(command))
+  }
+
+  function shutdownAnyway() {
+    if (!bar) return
+    bar.run("omarchy-system-shutdown")
   }
 
   Process {
@@ -277,6 +290,50 @@ Panel {
           foreground: root.barForeground
           bordered: true
           onClicked: root.launch("all")
+        }
+
+        Column {
+          visible: root.updates.length > 0 && root.offerShutdownAction
+          width: parent.width
+          spacing: Style.space(8)
+
+          PanelSeparator { foreground: root.barForeground }
+
+          Text {
+            width: parent.width
+            text: "Updates are waiting"
+            color: root.barForeground
+            font.family: root.bar ? root.bar.fontFamily : Style.font.family
+            font.pixelSize: Style.font.body
+            font.bold: true
+          }
+
+          Text {
+            width: parent.width
+            text: "Install them now, then turn off your computer."
+            wrapMode: Text.WordWrap
+            color: Qt.darker(root.barForeground, 1.35)
+            font.family: root.bar ? root.bar.fontFamily : Style.font.family
+            font.pixelSize: Style.font.bodySmall
+          }
+
+          Row {
+            spacing: Style.space(8)
+
+            Button {
+              text: "Update & shut down"
+              foreground: root.barForeground
+              bordered: true
+              onClicked: root.updateThenShutdown()
+            }
+
+            Button {
+              text: "Shut down anyway"
+              foreground: root.barForeground
+              bordered: true
+              onClicked: root.shutdownAnyway()
+            }
+          }
         }
       }
     }
