@@ -288,10 +288,20 @@ Panel {
             font.bold: true
           }
 
+          Button {
+            width: parent.width
+            text: "Update everything"
+            foreground: root.barForeground
+            bordered: true
+            onClicked: root.launch("all")
+          }
+
           Row {
+            width: parent.width
             spacing: Style.space(8)
 
             Button {
+              width: (parent.width - parent.spacing) / 2
               text: "Update & shut down"
               foreground: root.barForeground
               bordered: true
@@ -299,6 +309,7 @@ Panel {
             }
 
             Button {
+              width: (parent.width - parent.spacing) / 2
               text: "Shut down anyway"
               foreground: root.barForeground
               bordered: true
@@ -377,15 +388,6 @@ Panel {
               }
             }
           }
-        }
-
-        Item { visible: root.updates.length === 0; width: 1; height: Style.space(4) }
-        Button {
-          visible: root.updates.length > 0
-          text: "Update everything"
-          foreground: root.barForeground
-          bordered: true
-          onClicked: root.launch("all")
         }
 
         Column {

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.saiiiiiph.update-center",
   "name": "Update Center",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "author": "Saiiiiiph",
   "license": "MIT",
   "description": "One quiet indicator for pending system, AUR, Flatpak, and Omarchy plugin updates.",
