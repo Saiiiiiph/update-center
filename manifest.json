@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.saiiiiiph.update-center",
   "name": "Update Center",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "Saiiiiiph",
   "license": "MIT",
   "description": "One quiet indicator for pending system, AUR, Flatpak, and Omarchy plugin updates.",
@@ -15,6 +15,25 @@
     "description": "Checks system, AUR, Flatpak, and Git-managed Omarchy plugin updates. It never installs automatically.",
     "category": "System",
     "defaultSection": "right",
-    "allowMultiple": false
+    "allowMultiple": false,
+    "defaults": {
+      "checkSchedule": "Every 6 hours"
+    },
+    "schema": [
+      {
+        "key": "checkSchedule",
+        "type": "enum",
+        "label": "Check for updates",
+        "options": [
+          "At startup only",
+          "Every 30 minutes",
+          "Every 2 hours",
+          "Every 6 hours",
+          "Every 12 hours"
+        ],
+        "defaultValue": "Every 6 hours",
+        "description": "A check always runs when Omarchy starts. Choose how often it repeats during the session."
+      }
+    ]
   }
 }

@@ -19,6 +19,14 @@ Panel {
   property string completionPath: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/omarchy-update-center-complete"
   property string completionMarker: ""
   readonly property var barIdentity: hostWidget || root
+  readonly property string checkSchedule: String(setting("checkSchedule", "Every 6 hours"))
+  readonly property int checkIntervalMs: {
+    if (checkSchedule === "Every 30 minutes") return 30 * 60 * 1000
+    if (checkSchedule === "Every 2 hours") return 2 * 60 * 60 * 1000
+    if (checkSchedule === "Every 12 hours") return 12 * 60 * 60 * 1000
+    if (checkSchedule === "Every 6 hours") return 6 * 60 * 60 * 1000
+    return 0 // At startup only
+  }
 
   function open() {
     root.controller.show()
@@ -134,12 +142,13 @@ Panel {
   }
 
   Timer {
-    interval: 21600000
-    running: true
+    interval: root.checkIntervalMs > 0 ? root.checkIntervalMs : 60000
+    running: root.checkIntervalMs > 0
     repeat: true
-    triggeredOnStart: true
     onTriggered: root.refresh()
   }
+
+  Component.onCompleted: Qt.callLater(root.refresh)
 
   KeyboardPanel {
     id: popup
