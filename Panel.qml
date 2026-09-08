@@ -15,6 +15,9 @@ Panel {
   property var updates: []
   property bool checking: false
   property var expandedSections: ({})
+  property var knownUpdateKeys: ({})
+  property bool hasCompletedFirstCheck: false
+  property var lastCheckedAt: null
   readonly property int compactRowLimit: 3
   property string completionPath: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/omarchy-update-center-complete"
   property string completionMarker: ""
@@ -48,15 +51,33 @@ Panel {
 
   function parseUpdates(raw) {
     var parsed = []
+    var nextKeys = ({})
+    var newlyAvailable = 0
     var lines = String(raw || "").trim().split("\n")
     for (var i = 0; i < lines.length; i++) {
       if (!lines[i]) continue
       var fields = lines[i].split("\t")
       if (fields.length < 3) continue
-      parsed.push({ source: fields[0], name: fields[1], detail: fields.slice(2).join("\t") })
+      var item = { source: fields[0], name: fields[1], detail: fields.slice(2).join("\t") }
+      var key = item.source + "\t" + item.name
+      nextKeys[key] = true
+      if (hasCompletedFirstCheck && !knownUpdateKeys[key]) newlyAvailable++
+      parsed.push(item)
     }
     updates = parsed
+    knownUpdateKeys = nextKeys
+    lastCheckedAt = new Date()
+    hasCompletedFirstCheck = true
     if (hostWidget) hostWidget.updates = parsed
+    if (newlyAvailable > 0) notifyNewUpdates(newlyAvailable)
+  }
+
+  function notifyNewUpdates(count) {
+    if (!bar) return
+    var message = count === 1
+      ? "1 new update is available."
+      : count + " new updates are available."
+    bar.run("notify-send " + shellQuote("Update Center") + " " + shellQuote(message))
   }
 
   function count(source) {
@@ -186,13 +207,26 @@ Panel {
         Row {
           width: parent.width
           spacing: Style.space(10)
-          Text {
+          Column {
             width: parent.width - refreshButton.width - Style.space(10)
-            text: root.checking ? "Checking updates…" : (root.updates.length ? root.updates.length + " updates available" : "Everything is up to date")
-            color: root.barForeground
-            font.family: root.bar ? root.bar.fontFamily : Style.font.family
-            font.pixelSize: Style.font.heading
-            font.bold: true
+            spacing: Style.space(2)
+            Text {
+              width: parent.width
+              text: root.checking ? "Checking updates…" : (root.updates.length ? root.updates.length + " updates available" : "Everything is up to date")
+              color: root.barForeground
+              font.family: root.bar ? root.bar.fontFamily : Style.font.family
+              font.pixelSize: Style.font.heading
+              font.bold: true
+            }
+            Text {
+              width: parent.width
+              text: root.lastCheckedAt
+                ? "Last check: " + Qt.formatDateTime(root.lastCheckedAt, "ddd d MMM · HH:mm")
+                : "Not checked yet"
+              color: Qt.darker(root.barForeground, 1.35)
+              font.family: root.bar ? root.bar.fontFamily : Style.font.family
+              font.pixelSize: Style.font.bodySmall
+            }
           }
           Button {
             id: refreshButton
