@@ -114,6 +114,9 @@ Panel {
 
   function visibleSectionRows(source) {
     var rows = sectionRows(source)
+    // System update lists are often long. Keep that section to its heading
+    // until the user explicitly asks for the package names.
+    if (source === "system" && !sectionExpanded(source)) return []
     return sectionExpanded(source) ? rows : rows.slice(0, compactRowLimit)
   }
 
@@ -337,7 +340,9 @@ Panel {
               }
               Button {
                 id: detailsButton
-                visible: root.count(modelData.id) > root.compactRowLimit
+                visible: modelData.id === "system"
+                  ? root.count(modelData.id) > 0
+                  : root.count(modelData.id) > root.compactRowLimit
                 text: root.sectionExpanded(modelData.id)
                   ? "Less"
                   : "Show all (" + root.count(modelData.id) + ")"
