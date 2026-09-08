@@ -14,6 +14,8 @@ Panel {
   property var hostWidget: null
   property var updates: []
   property bool checking: false
+  property var expandedSections: ({})
+  readonly property int compactRowLimit: 3
   property string completionPath: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/omarchy-update-center-complete"
   property string completionMarker: ""
   readonly property var barIdentity: hostWidget || root
@@ -51,6 +53,21 @@ Panel {
     var total = 0
     for (var i = 0; i < updates.length; i++) if (updates[i].source === source) total++
     return total
+  }
+
+  function sectionRows(source) {
+    return updates.filter(function(item) { return item.source === source })
+  }
+
+  function sectionExpanded(source) {
+    return expandedSections[source] === true
+  }
+
+  function toggleSection(source) {
+    var next = ({})
+    for (var key in expandedSections) next[key] = expandedSections[key]
+    next[source] = !sectionExpanded(source)
+    expandedSections = next
   }
 
   function pendingPluginIds() {
@@ -95,7 +112,7 @@ Panel {
 
   function launch(kind) {
     if (!bar) return
-    if (kind === "system") runInTerminal("omarchy update")
+    if (kind === "system" || kind === "aur") runInTerminal("omarchy update")
     else if (kind === "flatpak") runInTerminal("flatpak update")
     else if (kind === "plugin") runInTerminal("omarchy plugin update")
     else runInTerminal("omarchy update && flatpak update && omarchy plugin update")
@@ -171,7 +188,8 @@ Panel {
 
         Repeater {
           model: [
-            { id: "system", title: "System & AUR", action: "Update system" },
+            { id: "system", title: "System", action: "Update system" },
+            { id: "aur", title: "AUR", action: "Update AUR" },
             { id: "flatpak", title: "Flatpak", action: "Update Flatpak" },
             { id: "plugin", title: "Omarchy plugins", action: "Update plugins" }
           ]
@@ -185,7 +203,7 @@ Panel {
               width: parent.width
               spacing: Style.space(8)
               Text {
-                width: parent.width - updateButton.width - Style.space(8)
+                width: parent.width - updateButton.width - detailsButton.width - Style.space(16)
                 text: modelData.title + " · " + root.count(modelData.id)
                 color: root.barForeground
                 font.family: root.bar ? root.bar.fontFamily : Style.font.family
@@ -199,12 +217,23 @@ Panel {
                 bordered: true
                 onClicked: root.launch(modelData.id)
               }
+              Button {
+                id: detailsButton
+                visible: root.count(modelData.id) > root.compactRowLimit
+                text: root.sectionExpanded(modelData.id)
+                  ? "Less"
+                  : "Show all (" + root.count(modelData.id) + ")"
+                foreground: root.barForeground
+                bordered: true
+                onClicked: root.toggleSection(modelData.id)
+              }
             }
             Repeater {
-              model: root.updates.filter(function(item) { return item.source === modelData.id })
+              model: root.sectionRows(modelData.id)
               delegate: Row {
                 required property var modelData
                 width: parent.width
+                visible: root.sectionExpanded(modelData.source) || index < root.compactRowLimit
                 spacing: Style.space(10)
                 Text {
                   width: parent.width * 0.54
