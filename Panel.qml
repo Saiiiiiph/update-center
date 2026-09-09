@@ -211,6 +211,15 @@ Panel {
     onTriggered: root.refresh()
   }
 
+  // A shell can appear before Wi-Fi or package mirrors are ready. This is a
+  // one-off boot retry, not an additional recurring schedule.
+  Timer {
+    interval: 30000
+    running: true
+    repeat: false
+    onTriggered: if (root.updates.length === 0) root.refresh()
+  }
+
   Component.onCompleted: Qt.callLater(root.refresh)
 
   KeyboardPanel {
@@ -241,7 +250,9 @@ Panel {
             spacing: Style.space(2)
             Text {
               width: parent.width
-              text: root.checking ? "Checking updates…" : (root.updates.length ? root.updates.length + " updates available" : "Everything is up to date")
+              text: (root.checking || !root.hasCompletedFirstCheck)
+                ? "Checking updates…"
+                : (root.updates.length ? root.updates.length + " updates available" : "Everything is up to date")
               color: root.barForeground
               font.family: root.bar ? root.bar.fontFamily : Style.font.family
               font.pixelSize: Style.font.heading

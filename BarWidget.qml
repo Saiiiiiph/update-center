@@ -12,7 +12,8 @@ BarWidget {
   property var anchorItem: null
   property var hostWidget: root
   readonly property int updateCount: updates.length
-  readonly property bool checking: panelLoader.item ? panelLoader.item.checking : false
+  readonly property bool initialCheckFinished: panelLoader.item ? panelLoader.item.hasCompletedFirstCheck === true : false
+  readonly property bool checking: !initialCheckFinished || (panelLoader.item ? panelLoader.item.checking : false)
   readonly property bool opened: panelLoader.item ? panelLoader.item.opened === true : false
 
   function injectPanel() {
