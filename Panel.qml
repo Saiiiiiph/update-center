@@ -157,7 +157,7 @@ Panel {
     // the bar is refreshed immediately after a successful update finishes.
     var completedCommand = command
       + " && date +%s%N > " + shellQuote(completionPath)
-      + " && printf '\\n\\033[1;32m✓ Mise à jour OK.\\033[0m\\n'"
+      + " && printf '\\n\\033[1;32m✓ Update complete.\\033[0m\\n'"
     bar.run("omarchy-launch-floating-terminal-with-presentation bash -lc " + shellQuote(completedCommand))
   }
 
