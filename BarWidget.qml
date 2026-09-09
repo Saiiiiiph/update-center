@@ -88,16 +88,5 @@ BarWidget {
       else root.togglePanel()
     }
 
-    Text {
-      visible: root.updateCount > 0 && !root.vertical
-      anchors.left: parent.right
-      anchors.leftMargin: -Style.space(7)
-      anchors.top: parent.top
-      text: root.updateCount > 99 ? "99+" : String(root.updateCount)
-      color: root.bar ? root.bar.foreground : Color.foreground
-      font.family: root.bar ? root.bar.fontFamily : Style.font.family
-      font.pixelSize: Style.font.caption * 0.72
-      font.bold: true
-    }
   }
 }
