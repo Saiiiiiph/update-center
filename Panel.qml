@@ -18,9 +18,12 @@ Panel {
   property var knownUpdateKeys: ({})
   property bool hasCompletedFirstCheck: false
   property var lastCheckedAt: null
+  property var lastUpdatedAt: null
   readonly property int compactRowLimit: 3
   property string completionPath: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/omarchy-update-center-complete"
   property string completionMarker: ""
+  property string stateDirectory: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/omarchy-update-center"
+  property string lastUpdatePath: stateDirectory + "/last-update"
   readonly property var barIdentity: hostWidget || root
   readonly property string checkSchedule: String(setting("checkSchedule", "Every 6 hours"))
   readonly property var offerShutdownActionValue: setting("offerShutdownAction", true)
@@ -156,7 +159,8 @@ Panel {
     // success at the bottom of the terminal. The marker is watched below, so
     // the bar is refreshed immediately after a successful update finishes.
     var completedCommand = command
-      + " && date +%s%N > " + shellQuote(completionPath)
+      + " && mkdir -p " + shellQuote(stateDirectory)
+      + " && date +%s%N | tee " + shellQuote(completionPath) + " > " + shellQuote(lastUpdatePath)
       + " && printf '\\n\\033[1;32m✓ Update complete.\\033[0m\\n'"
     // The Omarchy terminal wrapper rebuilds its command from its arguments.
     // Pass the complete script as one argument: an inner `bash -lc` would
@@ -178,6 +182,17 @@ Panel {
     }
   }
 
+  FileView {
+    path: root.lastUpdatePath
+    watchChanges: true
+    printErrors: false
+    onFileChanged: reload()
+    onLoaded: {
+      var timestamp = Number(String(text() || "").trim())
+      root.lastUpdatedAt = isNaN(timestamp) || timestamp <= 0 ? null : new Date(timestamp / 1000000)
+    }
+  }
+
   function launch(kind) {
     if (!bar) return
     if (kind === "system" || kind === "aur") runInTerminal("omarchy update")
@@ -188,7 +203,10 @@ Panel {
 
   function updateThenShutdown() {
     if (!bar) return
-    var command = "omarchy update && flatpak update && omarchy plugin update && omarchy system shutdown"
+    var command = "omarchy update && flatpak update && omarchy plugin update"
+      + " && mkdir -p " + shellQuote(stateDirectory)
+      + " && date +%s%N > " + shellQuote(lastUpdatePath)
+      + " && omarchy system shutdown"
     bar.run("omarchy-launch-floating-terminal-with-presentation " + shellQuote(command))
   }
 
@@ -266,6 +284,15 @@ Panel {
               text: root.lastCheckedAt
                 ? "Last check: " + Qt.formatDateTime(root.lastCheckedAt, "ddd d MMM · HH:mm")
                 : "Not checked yet"
+              color: Qt.darker(root.barForeground, 1.35)
+              font.family: root.bar ? root.bar.fontFamily : Style.font.family
+              font.pixelSize: Style.font.bodySmall
+            }
+            Text {
+              width: parent.width
+              text: root.lastUpdatedAt
+                ? "Last update: " + Qt.formatDateTime(root.lastUpdatedAt, "ddd d MMM · HH:mm")
+                : "Last update: never"
               color: Qt.darker(root.barForeground, 1.35)
               font.family: root.bar ? root.bar.fontFamily : Style.font.family
               font.pixelSize: Style.font.bodySmall
