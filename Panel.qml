@@ -158,7 +158,10 @@ Panel {
     var completedCommand = command
       + " && date +%s%N > " + shellQuote(completionPath)
       + " && printf '\\n\\033[1;32m✓ Update complete.\\033[0m\\n'"
-    bar.run("omarchy-launch-floating-terminal-with-presentation bash -lc " + shellQuote(completedCommand))
+    // The Omarchy terminal wrapper rebuilds its command from its arguments.
+    // Pass the complete script as one argument: an inner `bash -lc` would
+    // otherwise receive only `omarchy` and silently skip the `update` action.
+    bar.run("omarchy-launch-floating-terminal-with-presentation " + shellQuote(completedCommand))
   }
 
   FileView {
@@ -186,7 +189,7 @@ Panel {
   function updateThenShutdown() {
     if (!bar) return
     var command = "omarchy update && flatpak update && omarchy plugin update && omarchy system shutdown"
-    bar.run("omarchy-launch-floating-terminal-with-presentation bash -lc " + shellQuote(command))
+    bar.run("omarchy-launch-floating-terminal-with-presentation " + shellQuote(command))
   }
 
   function shutdownAnyway() {
