@@ -21,6 +21,8 @@ following optional tools when they are installed:
 - `yay` for AUR update checks;
 - `flatpak` for Flatpak updates.
 
+The combined update actions skip Flatpak cleanly when it is not installed.
+
 ## Install
 
 From the published repository:

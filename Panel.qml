@@ -168,6 +168,16 @@ Panel {
     bar.run("omarchy-launch-floating-terminal-with-presentation " + shellQuote(completedCommand))
   }
 
+  // Flatpak is optional in Omarchy. Treat a missing executable as a skipped
+  // update, while still propagating a real `flatpak update` failure.
+  function flatpakUpdateCommand() {
+    return "{ ! command -v flatpak >/dev/null 2>&1 || flatpak update; }"
+  }
+
+  function updateChain() {
+    return "omarchy update && " + flatpakUpdateCommand() + " && omarchy plugin update"
+  }
+
   FileView {
     path: root.completionPath
     watchChanges: true
@@ -196,14 +206,14 @@ Panel {
   function launch(kind) {
     if (!bar) return
     if (kind === "system" || kind === "aur") runInTerminal("omarchy update")
-    else if (kind === "flatpak") runInTerminal("flatpak update")
+    else if (kind === "flatpak") runInTerminal(flatpakUpdateCommand())
     else if (kind === "plugin") runInTerminal("omarchy plugin update")
-    else runInTerminal("omarchy update && flatpak update && omarchy plugin update")
+    else runInTerminal(updateChain())
   }
 
   function updateThenShutdown() {
     if (!bar) return
-    var command = "omarchy update && flatpak update && omarchy plugin update"
+    var command = updateChain()
       + " && mkdir -p " + shellQuote(stateDirectory)
       + " && date +%s%N > " + shellQuote(lastUpdatePath)
       + " && omarchy system shutdown"
