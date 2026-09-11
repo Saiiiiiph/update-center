@@ -175,7 +175,7 @@ Panel {
   }
 
   function updateChain() {
-    return "omarchy update && " + flatpakUpdateCommand() + " && omarchy plugin update"
+    return "omarchy update && " + flatpakUpdateCommand() + " && omarchy plugin update --yes"
   }
 
   FileView {
@@ -207,7 +207,7 @@ Panel {
     if (!bar) return
     if (kind === "system" || kind === "aur") runInTerminal("omarchy update")
     else if (kind === "flatpak") runInTerminal(flatpakUpdateCommand())
-    else if (kind === "plugin") runInTerminal("omarchy plugin update")
+    else if (kind === "plugin") runInTerminal("omarchy plugin update --yes")
     else runInTerminal(updateChain())
   }
 
