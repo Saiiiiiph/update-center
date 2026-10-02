@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 import qs.Commons
 import qs.Ui
@@ -154,6 +155,15 @@ Panel {
     return "'" + String(value).replace(/'/g, "'\\''") + "'"
   }
 
+  function centerCursor() {
+    Hyprland.dispatch(
+      "(function() local m = hl.get_monitor_at_cursor() "
+      + "if not m then return end "
+      + "return hl.dispatch(hl.dsp.cursor.move({ "
+      + "x = m.x + m.width / (2 * m.scale), "
+      + "y = m.y + m.height / (2 * m.scale) })) end)()")
+  }
+
   function runInTerminal(command) {
     // Kept behind && so a failed or cancelled update never masquerades as a
     // success at the bottom of the terminal. The marker is watched below, so
@@ -166,6 +176,8 @@ Panel {
     // Pass the complete script as one argument: an inner `bash -lc` would
     // otherwise receive only `omarchy` and silently skip the `update` action.
     bar.run("omarchy-launch-floating-terminal-with-presentation " + shellQuote(completedCommand))
+    root.close()
+    root.centerCursor()
   }
 
   // Flatpak is optional in Omarchy. Treat a missing executable as a skipped
@@ -218,6 +230,8 @@ Panel {
       + " && date +%s%N > " + shellQuote(lastUpdatePath)
       + " && omarchy system shutdown"
     bar.run("omarchy-launch-floating-terminal-with-presentation " + shellQuote(command))
+    root.close()
+    root.centerCursor()
   }
 
   function shutdownAnyway() {
